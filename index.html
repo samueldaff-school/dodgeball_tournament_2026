@@ -148,6 +148,11 @@
   .saving-indicator { font-size: 0.75rem; color: var(--muted); display: none; }
   .saving-indicator.show { display: inline; }
 
+  .postpone-banner { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(135deg, rgba(192,57,43,0.95), rgba(230,59,46,0.95)); display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10; border-radius: 10px; transition: all 0.2s; }
+  .postpone-banner:hover { background: linear-gradient(135deg, rgba(230,59,46,0.95), rgba(192,57,43,0.95)); }
+  .postpone-text { color: white; font-weight: 700; font-size: 1.2rem; letter-spacing: 1px; text-align: center; }
+  .postpone-reveal { font-size: 0.8rem; color: rgba(255,255,255,0.7); margin-top: 0.5rem; }
+
   footer { text-align: center; padding: 2rem; color: var(--muted); font-size: 0.78rem; border-top: 1px solid var(--border); margin-top: 2rem; }
   ::-webkit-scrollbar { width: 5px; height: 5px; }
   ::-webkit-scrollbar-track { background: var(--bg); }
@@ -157,9 +162,6 @@
 <body>
 
 <header>
-  <div style="width: 100%; margin: -2rem -2rem 2rem -2rem; overflow: hidden;">
-    <img src="dodgeball-banner.png" alt="Dodgeball Game" style="width: 100%; display: block; max-height: 300px; object-fit: cover;">
-  </div>
   <div class="header-inner">
     <div class="header-text">
       <div class="header-eyebrow">Year 8 · 2026</div>
@@ -254,24 +256,24 @@ const sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const PASSWORD_HASH = '5711FD42E0E096C6' + '6C16A4C8691C7F22' + '7A92174838D8D551' + '81F3886744ADF88F';
 
 let matches = [
-  { id:1,  date:'Thu 21 May 2026, 1:35 PM', team_a:'8N',  team_b:'8M',   round:'Round 1',      winner:null },
-  { id:2,  date:'Thu 28 May 2026, 1:35 PM', team_a:'8E',  team_b:'8J',   round:'Round 1',      winner:null },
-  { id:3,  date:'Thu 4 Jun 2026, 1:35 PM',  team_a:'8G',  team_b:'8A',   round:'Round 1',      winner:null },
-  { id:4,  date:'Thu 11 Jun 2026, 1:35 PM', team_a:'8L',  team_b:'8H',   round:'Round 1',      winner:null },
-  { id:5,  date:'Thu 18 Jun 2026, 1:35 PM', team_a:'8I',  team_b:'8F',   round:'Round 1',      winner:null },
-  { id:6,  date:'Thu 25 Jun 2026, 1:35 PM', team_a:'8K',  team_b:'8C',   round:'Round 1',      winner:null },
-  { id:7,  date:'Thu 16 Jul 2026, 1:35 PM', team_a:'8B',  team_b:'~w1',  round:'Quarter-Final',winner:null },
-  { id:8,  date:'Thu 23 Jul 2026, 1:35 PM', team_a:'8D',  team_b:'~w2',  round:'Quarter-Final',winner:null },
-  { id:9,  date:'Thu 30 Jul 2026, 1:35 PM', team_a:'~w3', team_b:'~w4',  round:'Quarter-Final',winner:null },
-  { id:10, date:'Thu 6 Aug 2026, 1:35 PM',  team_a:'~w5', team_b:'~w6',  round:'Quarter-Final',winner:null },
-  { id:11, date:'Thu 13 Aug 2026, 1:35 PM', team_a:'~w7', team_b:'~w8',  round:'Semi-Final',   winner:null },
-  { id:12, date:'Thu 20 Aug 2026, 1:35 PM', team_a:'~w9', team_b:'~w10', round:'Semi-Final',   winner:null },
-  { id:13, date:'Thu 27 Aug 2026, 1:35 PM', team_a:'~w11',team_b:'~w12', round:'Grand Final',  winner:null },
+  { id:1,  date:'Thu 28 May 2026, 1:35 PM', team_a:'8N',  team_b:'8M',   round:'Round 1',      winner:null, postponed:true },
+  { id:2,  date:'Thu 4 Jun 2026, 1:35 PM',  team_a:'8E',  team_b:'8J',   round:'Round 1',      winner:null },
+  { id:3,  date:'Thu 11 Jun 2026, 1:35 PM', team_a:'8G',  team_b:'8A',   round:'Round 1',      winner:null },
+  { id:4,  date:'Thu 18 Jun 2026, 1:35 PM', team_a:'8L',  team_b:'8H',   round:'Round 1',      winner:null },
+  { id:5,  date:'Thu 25 Jun 2026, 1:35 PM', team_a:'8I',  team_b:'8F',   round:'Round 1',      winner:null },
+  { id:6,  date:'Thu 16 Jul 2026, 1:35 PM', team_a:'8K',  team_b:'8C',   round:'Round 1',      winner:null },
+  { id:7,  date:'Thu 23 Jul 2026, 1:35 PM', team_a:'8B',  team_b:'~w1',  round:'Quarter-Final',winner:null },
+  { id:8,  date:'Thu 30 Jul 2026, 1:35 PM', team_a:'8D',  team_b:'~w2',  round:'Quarter-Final',winner:null },
+  { id:9,  date:'Thu 6 Aug 2026, 1:35 PM',  team_a:'~w3', team_b:'~w4',  round:'Quarter-Final',winner:null },
+  { id:10, date:'Thu 13 Aug 2026, 1:35 PM', team_a:'~w5', team_b:'~w6',  round:'Quarter-Final',winner:null },
+  { id:11, date:'Thu 20 Aug 2026, 1:35 PM', team_a:'~w7', team_b:'~w8',  round:'Semi-Final',   winner:null },
+  { id:12, date:'Thu 27 Aug 2026, 1:35 PM', team_a:'~w9', team_b:'~w10', round:'Semi-Final',   winner:null },
+  { id:13, date:'Thu 3 Sep 2026, 1:35 PM',  team_a:'~w11',team_b:'~w12', round:'Grand Final',  winner:null },
 ];
 
 const BREAKS = [
   { date:'Thu 2 Jul 2026',  label:'School Holidays — No Match' },
-  { date:'Thu 9 Jul 2026', label:'School Holidays — No Match' },
+  { date:'Thu 9 Jul 2026',  label:'School Holidays — No Match' },
 ];
 
 const teamColours = {
@@ -446,6 +448,19 @@ function buildSchedule() {
           <div class="mround">${item.round}${item.winner ? ' — ' + item.winner + ' wins' : ''}</div>
         </div>
         ${status}`;
+
+      if (item.postponed) {
+        row.style.position = 'relative';
+        const banner = document.createElement('div');
+        banner.className = 'postpone-banner';
+        banner.id = `postpone-banner-${item.id}`;
+        banner.onclick = (e) => {
+          e.stopPropagation();
+          banner.style.display = 'none';
+        };
+        banner.innerHTML = `<div><div class="postpone-text">Match ${item.id} Postponed</div><div class="postpone-reveal">Click to reveal</div></div>`;
+        row.appendChild(banner);
+      }
     }
     list.appendChild(row);
   });
