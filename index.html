@@ -153,6 +153,24 @@
   .postpone-text { color: white; font-weight: 700; font-size: 1.2rem; letter-spacing: 1px; text-align: center; }
   .postpone-reveal { font-size: 0.8rem; color: rgba(255,255,255,0.7); margin-top: 0.5rem; }
 
+  .side-characters { position: fixed; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; z-index: 50; }
+  .side-char { position: fixed; width: 130px; opacity: 0.92; }
+  .side-char.left-1  { left: 4px;  bottom: 20%; animation: floatA 3.2s ease-in-out infinite; }
+  .side-char.left-2  { left: 4px;  bottom: 55%; animation: floatB 3.8s ease-in-out infinite; }
+  .side-char.right-1 { right: 4px; bottom: 20%; animation: floatC 3.5s ease-in-out infinite; transform: scaleX(-1); }
+  .side-char.right-2 { right: 4px; bottom: 55%; animation: floatA 4.1s ease-in-out infinite; transform: scaleX(-1); }
+  .side-char.right-3 { right: 4px; bottom: 78%; animation: floatB 2.9s ease-in-out infinite; transform: scaleX(-1); }
+  @keyframes floatA { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-14px)} }
+  @keyframes floatB { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+  @keyframes floatC { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-18px)} }
+  .side-char.right-1 { animation: floatA-flip 3.5s ease-in-out infinite; }
+  .side-char.right-2 { animation: floatC-flip 4.1s ease-in-out infinite; }
+  .side-char.right-3 { animation: floatB-flip 2.9s ease-in-out infinite; }
+  @keyframes floatA-flip { 0%,100%{transform:scaleX(-1) translateY(0)} 50%{transform:scaleX(-1) translateY(-14px)} }
+  @keyframes floatB-flip { 0%,100%{transform:scaleX(-1) translateY(0)} 50%{transform:scaleX(-1) translateY(-10px)} }
+  @keyframes floatC-flip { 0%,100%{transform:scaleX(-1) translateY(0)} 50%{transform:scaleX(-1) translateY(-18px)} }
+  @media (max-width: 1200px) { .side-char { display: none; } }
+
   footer { text-align: center; padding: 2rem; color: var(--muted); font-size: 0.78rem; border-top: 1px solid var(--border); margin-top: 2rem; }
   ::-webkit-scrollbar { width: 5px; height: 5px; }
   ::-webkit-scrollbar-track { background: var(--bg); }
@@ -246,6 +264,13 @@
 </div>
 
 <footer>Clyde Secondary College · Year 8 Dodgeball Tournament 2026</footer>
+
+<!-- Side characters -->
+<img src="sprite_red.png"    class="side-char left-1"  alt="">
+<img src="sprite_purple.png" class="side-char left-2"  alt="">
+<img src="sprite_green.png"  class="side-char right-1" alt="">
+<img src="sprite_yellow.png" class="side-char right-2" alt="">
+<img src="sprite_orange.png" class="side-char right-3" alt="">
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
