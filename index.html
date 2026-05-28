@@ -87,6 +87,12 @@
   .st-tbd { background: #f0f0f5; color: #8888aa; border: 1px solid #d8d8e8; }
   .st-done { background: var(--green-bg); color: var(--green); border: 1px solid #b8dfc7; }
   .st-brk { background: #f5f0e0; color: #8a7a30; border: 1px solid #ddd0a0; }
+  .past-header { display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 0.9rem; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 0.72rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; user-select: none; transition: border-color 0.2s, color 0.2s; }
+  .past-header:hover { color: var(--text); border-color: var(--gold); }
+  .ph-count { background: var(--green-bg); color: var(--green); border-radius: 4px; padding: 1px 5px; font-size: 0.65rem; margin-left: 0.4rem; font-style: normal; }
+  .ph-chevron { font-size: 0.8rem; transition: transform 0.2s; display: inline-block; }
+  .past-header.open .ph-chevron { transform: rotate(180deg); }
+  .past-section { display: flex; flex-direction: column; gap: 0.45rem; }
 
   .bracket-wrap { overflow-x: auto; padding-bottom: 1rem; }
   .bracket { display: flex; min-width: 820px; }
@@ -100,6 +106,7 @@
   .b-team:last-child { border-bottom: none; }
   .b-team.tbd { color: var(--grey-light); font-style: italic; font-weight: 400; }
   .b-team.win { background: var(--green-bg); color: var(--green); font-weight: 700; }
+  .team-win { background: #22c55e; color: #fff; border-radius: 4px; padding: 1px 6px; }
   .champ-col { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1rem 0.5rem; }
   .trophy { width: 68px; height: 68px; border-radius: 50%; background: conic-gradient(var(--gold),#e0aa00,var(--gold)); display: flex; align-items: center; justify-content: center; font-size: 2rem; animation: tglow 2s ease-in-out infinite alternate; }
   @keyframes tglow { from { box-shadow: 0 0 15px rgba(245,194,0,0.2) } to { box-shadow: 0 0 40px rgba(245,194,0,0.6) } }
@@ -282,6 +289,7 @@ const teamColours = {
   '8A':'#e63946', '8B':'#f77f00', '8C':'#06aed5', '8D':'#086788',
   '8E':'#dd3c51', '8F':'#a23b72', '8G':'#f18f01', '8H':'#c73e1d',
   '8I':'#6a994e', '8J':'#a7c957', '8K':'#bc4749', '8L':'#2d6a4f',
+  '8M':'#7b2d8b', '8N':'#2d8b7b',
 };
 
 let predictions = {};
@@ -423,6 +431,12 @@ function updateCountdown() {
   document.getElementById('voteNote').textContent = storedVote ? 'Your vote counted' : 'Refresh every 10s';
 }
 
+function resolveTeam(name) {
+  if (!name || !name.startsWith('~w')) return name;
+  const srcMatch = matches.find(m => m.id === parseInt(name.slice(2)));
+  return (srcMatch && srcMatch.winner) ? srcMatch.winner : name;
+}
+
 function buildSchedule() {
   const list = document.getElementById('schedList');
   list.innerHTML = '';
@@ -431,14 +445,14 @@ function buildSchedule() {
     ...BREAKS.map(b => ({ type:'break', sortDate: new Date(b.date.replace('Thu ','')), ...b })),
   ].sort((a,b) => a.sortDate - b.sortDate);
 
-  sorted.forEach(item => {
+  function makeRow(item) {
     const row = document.createElement('div');
     if (item.type === 'break') {
       row.className = 'match-row break-row';
       row.innerHTML = `<div class="mnum">—</div><div>${item.label}</div><div class="mstatus st-brk">Break</div>`;
     } else {
-      const a = item.team_a;
-      const b = item.team_b;
+      const a = resolveTeam(item.team_a);
+      const b = resolveTeam(item.team_b);
       const gf = item.round === 'Grand Final';
       row.className = 'match-row' + (gf ? ' gf-row' : '');
       const status = item.winner ? `<div class="mstatus st-done">Done</div>` : `<div class="mstatus st-tbd">TBD</div>`;
@@ -446,7 +460,7 @@ function buildSchedule() {
         <div class="mnum">${item.id}</div>
         <div>
           <div class="mdate">${item.date}</div>
-          <div class="mteams"><span style="width:10px;height:10px;border-radius:50%;background:${teamColours[a]||'#ccc'};flex-shrink:0"></span><strong>${a}</strong><span class="vs">vs</span><span style="width:10px;height:10px;border-radius:50%;background:${teamColours[b]||'#ccc'};flex-shrink:0"></span><strong>${b}</strong></div>
+          <div class="mteams"><span style="width:10px;height:10px;border-radius:50%;background:${teamColours[a]||'#ccc'};flex-shrink:0"></span><strong class="${item.winner === a ? 'team-win' : ''}">${a}</strong><span class="vs">vs</span><span style="width:10px;height:10px;border-radius:50%;background:${teamColours[b]||'#ccc'};flex-shrink:0"></span><strong class="${item.winner === b ? 'team-win' : ''}">${b}</strong></div>
           <div class="mround">${item.round}${item.winner ? ' — ' + item.winner + ' wins' : ''}</div>
         </div>
         ${status}`;
@@ -464,8 +478,33 @@ function buildSchedule() {
         row.appendChild(banner);
       }
     }
-    list.appendChild(row);
-  });
+    return row;
+  }
+
+  const doneItems = sorted.filter(item => item.type === 'match' && item.winner);
+  const pendingItems = sorted.filter(item => !(item.type === 'match' && item.winner));
+
+  if (doneItems.length > 0) {
+    const header = document.createElement('div');
+    header.className = 'past-header';
+    header.innerHTML = `<span>Past Results <em class="ph-count">${doneItems.length}</em></span><span class="ph-chevron">▾</span>`;
+
+    const section = document.createElement('div');
+    section.className = 'past-section';
+    section.style.display = 'none';
+
+    header.onclick = () => {
+      const isOpen = section.style.display !== 'none';
+      section.style.display = isOpen ? 'none' : 'flex';
+      header.classList.toggle('open', !isOpen);
+    };
+
+    doneItems.forEach(item => section.appendChild(makeRow(item)));
+    list.appendChild(header);
+    list.appendChild(section);
+  }
+
+  pendingItems.forEach(item => list.appendChild(makeRow(item)));
 }
 
 function buildBracket() {
@@ -487,8 +526,8 @@ function buildBracket() {
     const matches_div = document.createElement('div');
     matches_div.className = 'b-matches';
     round.matches.forEach(m => {
-      const a = m.team_a;
-      const b = m.team_b;
+      const a = resolveTeam(m.team_a);
+      const b = resolveTeam(m.team_b);
       const match_box = document.createElement('div');
       match_box.className = 'b-match' + (round.name === 'Grand Final' ? ' b-gf' : '');
       match_box.innerHTML = `
@@ -589,8 +628,8 @@ function buildEditList() {
   matches.filter(m => !m.winner).forEach(m => {
     const item = document.createElement('div');
     item.className = 'edit-item';
-    const a = m.team_a;
-    const b = m.team_b;
+    const a = resolveTeam(m.team_a);
+    const b = resolveTeam(m.team_b);
     item.innerHTML = `
       <div class="ei-date">${m.date}</div>
       <div class="ei-teams">${a} vs ${b}</div>
