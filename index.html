@@ -349,8 +349,8 @@ async function voteFor(side) {
   const next = matches.find(m => new Date(m.date.replace('Thu ','')) > now && !m.winner);
   if (!next) return;
 
-  const a = next.team_a;
-  const b = next.team_b;
+  const a = resolveTeam(next.team_a);
+  const b = resolveTeam(next.team_b);
   if (a.startsWith('~w') || b.startsWith('~w')) return;
 
   localStorage.setItem(`prediction-match-${next.id}`, side);
@@ -388,8 +388,8 @@ function updateCountdown() {
   const hours = Math.floor((diff%(1000*60*60*24))/(1000*60*60));
   const mins = Math.floor((diff%(1000*60*60))/(1000*60));
 
-  const a = next.team_a;
-  const b = next.team_b;
+  const a = resolveTeam(next.team_a);
+  const b = resolveTeam(next.team_b);
 
   document.getElementById('countdownTitle').textContent = `Match ${next.id}: ${a} vs ${b}`;
   document.getElementById('countdownMeta').textContent = `${next.date} · ${next.round}`;
@@ -481,8 +481,9 @@ function buildSchedule() {
     return row;
   }
 
-  const doneItems = sorted.filter(item => item.type === 'match' && item.winner);
-  const pendingItems = sorted.filter(item => !(item.type === 'match' && item.winner));
+  const now = new Date();
+  const doneItems = sorted.filter(item => (item.type === 'match' && item.winner) || (item.type === 'break' && item.sortDate < now));
+  const pendingItems = sorted.filter(item => !((item.type === 'match' && item.winner) || (item.type === 'break' && item.sortDate < now)));
 
   if (doneItems.length > 0) {
     const header = document.createElement('div');
